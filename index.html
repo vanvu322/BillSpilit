@@ -17,21 +17,25 @@
       --brand:#a6e3b2; /* pastel green */
       --brand-strong:#79d18e;
       --brand-weak:#e9f8ee;
+      --brand-text:#0f5132;
+      --brand-gradient:#b5f0c3;
+      --btn-text:#ffffff;
       --text:#1f2937;
       --muted:#6b7280;
       --danger:#ef4444;
       --card-radius:16px;
     }
     html,body{font-family: 'Roboto', sans-serif; color:var(--text); background: #f7faf9}
-    .navbar{background:linear-gradient(135deg,var(--brand),#b5f0c3)}
+    .navbar{background:linear-gradient(135deg,var(--brand),var(--brand-gradient)); transition:background .3s ease}
     .navbar-brand{font-weight:700; letter-spacing:.3px}
     .container-narrow{max-width:980px}
     .card{border:none; border-radius:var(--card-radius); box-shadow:0 6px 18px rgba(0,0,0,.06)}
     .card-header{background:transparent; font-weight:600}
-    .chip{display:inline-flex; align-items:center; gap:.35rem; background:var(--brand-weak); color:#0f5132; padding:.35rem .6rem; border-radius:999px; font-size:.85rem}
+    .chip{display:inline-flex; align-items:center; gap:.35rem; background:var(--brand-weak); color:var(--brand-text); padding:.35rem .65rem; border-radius:999px; font-size:.85rem; transition:background .2s, color .2s; border:none}
     .chip button{border:none; background:transparent; padding:0; line-height:1}
-    .btn-brand{background:var(--brand-strong); border:none}
-    .btn-brand:hover{background:#64c781}
+    .btn-brand{background:var(--brand-strong); border:none; color:var(--btn-text); transition:all .2s}
+    .btn-brand:hover{background:var(--brand-strong); filter:brightness(0.92); color:var(--btn-text)}
+    .btn-brand:active, .btn-brand:focus{background:var(--brand-strong) !important; color:var(--btn-text) !important}
 
     /* iOS-like toggle */
     .switch{position:relative; display:inline-block; width:52px; height:30px}
@@ -41,11 +45,26 @@
     input:checked + .slider{background:var(--brand-strong)}
     input:checked + .slider:before{transform:translateX(22px)}
 
-    .form-section-title{font-weight:600; color:#0f5132}
+    .form-section-title{font-weight:600; color:var(--brand-text); transition:color .2s}
     .table thead th{white-space:nowrap}
     .amount-mono{font-variant-numeric:tabular-nums}
     .list-scroll{max-height:220px; overflow:auto}
     .divider{height:1px; background:#e5e7eb}
+
+    /* Theme picker styles */
+    .theme-dropdown{position:relative}
+    .theme-dot{width:12px; height:12px; border-radius:50%; display:inline-block; background-color:var(--brand-strong); border:2px solid rgba(255,255,255,0.9); box-shadow:0 0 0 1px rgba(0,0,0,0.15); flex-shrink:0}
+    .theme-menu{position:absolute; top:calc(100% + 8px); right:0; z-index:1050; display:none; min-width:250px; background:#ffffff; border-radius:14px; padding:8px; box-shadow:0 12px 30px rgba(0,0,0,0.14); border:1px solid rgba(0,0,0,0.08)}
+    .theme-menu.show{display:block; animation:themeFadeIn .18s ease-out}
+    @keyframes themeFadeIn{from{opacity:0; transform:translateY(-6px)} to{opacity:1; transform:translateY(0)}}
+    .theme-item{display:flex; align-items:center; justify-content:space-between; padding:8px 12px; border-radius:8px; cursor:pointer; font-size:0.875rem; color:var(--text); text-decoration:none; transition:all .15s; border:none; background:transparent; width:100%; text-align:left}
+    .theme-item:hover, .theme-item:focus{background:#f1f5f9; color:var(--text); outline:none}
+    .theme-item.active{background:var(--brand-weak) !important; color:var(--brand-text) !important; font-weight:600}
+    .theme-item.active .theme-check{opacity:1; transform:scale(1)}
+    .theme-check{opacity:0; transform:scale(0.8); transition:all .15s; color:var(--brand-strong); font-weight:bold}
+    .theme-swatch{width:16px; height:16px; border-radius:50%; display:inline-block; border:1px solid rgba(0,0,0,0.12); flex-shrink:0}
+    .theme-toggle-arrow{font-size:0.65rem; opacity:0.75; transition:transform 0.2s ease}
+    .theme-dropdown.open .theme-toggle-arrow{transform:rotate(180deg)}
 
     /* Mobile tweaks */
     @media (max-width: 576px){
@@ -64,7 +83,27 @@
   <nav class="navbar navbar-expand-lg navbar-light shadow-sm">
     <div class="container container-narrow">
       <a class="navbar-brand text-dark" href="#">BillSplit</a>
-      <span class="chip ms-auto">Màu chủ đạo: xanh lá pastel</span>
+      <div class="theme-dropdown ms-auto" id="themeDropdownContainer">
+        <button class="btn chip border-0 shadow-none d-flex align-items-center gap-2" type="button" id="themeDropdownBtn" title="Nhấn để đổi màu giao diện">
+          <span class="theme-dot" id="currentThemeDot"></span>
+          <span id="currentThemeLabel">Màu chủ đạo: Xanh lá pastel</span>
+          <span class="theme-toggle-arrow">▼</span>
+        </button>
+        <div class="theme-menu" id="themeDropdownMenu">
+          <div class="px-2 py-1 text-muted small fw-semibold text-uppercase" style="letter-spacing:0.5px">Bảng màu giao diện</div>
+          <div id="themePresetList" class="d-flex flex-column gap-1"></div>
+          <div class="divider my-2"></div>
+          <div class="px-2 py-1">
+            <label class="d-flex align-items-center justify-content-between w-100 mb-0" style="cursor:pointer; font-size: 0.88rem;">
+              <span class="d-flex align-items-center gap-2">
+                <span>🎨</span>
+                <span>Tự chọn màu:</span>
+              </span>
+              <input type="color" id="customColorPicker" class="form-control form-control-color p-0 border-0 rounded-circle" style="width:28px; height:28px; cursor:pointer;" value="#79d18e" title="Chọn màu theo ý thích">
+            </label>
+          </div>
+        </div>
+      </div>
     </div>
   </nav>
 
@@ -584,8 +623,229 @@
 
     function computeAndRender(){ renderSummaryAndSettlements(); }
 
+    // --- Theme Management ---
+    const THEME_LS_KEY = 'billsplit_custom_theme_v1';
+    const themes = [
+      {
+        id: 'green',
+        name: 'Xanh lá pastel',
+        brand: '#a6e3b2',
+        brandStrong: '#79d18e',
+        brandWeak: '#e9f8ee',
+        brandText: '#0f5132',
+        brandGradient: '#b5f0c3',
+        btnText: '#ffffff'
+      },
+      {
+        id: 'blue',
+        name: 'Xanh biển pastel',
+        brand: '#bae6fd',
+        brandStrong: '#38bdf8',
+        brandWeak: '#f0f9ff',
+        brandText: '#0369a1',
+        brandGradient: '#7dd3fc',
+        btnText: '#ffffff'
+      },
+      {
+        id: 'pink',
+        name: 'Hồng phấn pastel',
+        brand: '#fbcfe8',
+        brandStrong: '#f472b6',
+        brandWeak: '#fdf2f8',
+        brandText: '#be185d',
+        brandGradient: '#f9a8d4',
+        btnText: '#ffffff'
+      },
+      {
+        id: 'purple',
+        name: 'Tím lavender',
+        brand: '#ddd6fe',
+        brandStrong: '#a78bfa',
+        brandWeak: '#f5f3ff',
+        brandText: '#6d28d9',
+        brandGradient: '#c4b5fd',
+        btnText: '#ffffff'
+      },
+      {
+        id: 'orange',
+        name: 'Cam đào ấm áp',
+        brand: '#fed7aa',
+        brandStrong: '#fb923c',
+        brandWeak: '#fff7ed',
+        brandText: '#c2410c',
+        brandGradient: '#fdba74',
+        btnText: '#ffffff'
+      },
+      {
+        id: 'slate',
+        name: 'Xám sang trọng',
+        brand: '#cbd5e1',
+        brandStrong: '#64748b',
+        brandWeak: '#f1f5f9',
+        brandText: '#334155',
+        brandGradient: '#94a3b8',
+        btnText: '#ffffff'
+      }
+    ];
+
+    function hexToHsl(hex) {
+      hex = hex.replace('#', '');
+      if (hex.length === 3) hex = hex.split('').map(c => c + c).join('');
+      const r = parseInt(hex.substring(0, 2), 16) / 255;
+      const g = parseInt(hex.substring(2, 4), 16) / 255;
+      const b = parseInt(hex.substring(4, 6), 16) / 255;
+      const max = Math.max(r, g, b), min = Math.min(r, g, b);
+      let h, s, l = (max + min) / 2;
+      if (max === min) {
+        h = s = 0;
+      } else {
+        const d = max - min;
+        s = l > 0.5 ? d / (2 - max - min) : d / (max + min);
+        switch (max) {
+          case r: h = (g - b) / d + (g < b ? 6 : 0); break;
+          case g: h = (b - r) / d + 2; break;
+          case b: h = (r - g) / d + 4; break;
+        }
+        h = Math.round(h * 60);
+      }
+      return { h, s: Math.round(s * 100), l: Math.round(l * 100) };
+    }
+
+    function getContrastColor(hex) {
+      hex = hex.replace('#', '');
+      if (hex.length === 3) hex = hex.split('').map(c => c + c).join('');
+      const r = parseInt(hex.substring(0, 2), 16);
+      const g = parseInt(hex.substring(2, 4), 16);
+      const b = parseInt(hex.substring(4, 6), 16);
+      const yiq = ((r * 299) + (g * 587) + (b * 114)) / 1000;
+      return (yiq >= 150) ? '#1f2937' : '#ffffff';
+    }
+
+    function createThemeFromColor(hex, label = 'Tùy chỉnh') {
+      const { h, s } = hexToHsl(hex);
+      const btnText = getContrastColor(hex);
+      return {
+        id: 'custom',
+        name: label,
+        brand: `hsl(${h}, ${Math.min(s, 65)}%, 82%)`,
+        brandStrong: hex,
+        brandWeak: `hsl(${h}, ${Math.min(s, 55)}%, 96%)`,
+        brandText: `hsl(${h}, ${Math.max(s, 60)}%, 22%)`,
+        brandGradient: `hsl(${h}, ${Math.min(s, 75)}%, 88%)`,
+        btnText
+      };
+    }
+
+    function applyTheme(theme, save = true) {
+      const root = document.documentElement;
+      root.style.setProperty('--brand', theme.brand);
+      root.style.setProperty('--brand-strong', theme.brandStrong);
+      root.style.setProperty('--brand-weak', theme.brandWeak);
+      root.style.setProperty('--brand-text', theme.brandText);
+      root.style.setProperty('--brand-gradient', theme.brandGradient);
+      root.style.setProperty('--btn-text', theme.btnText || '#ffffff');
+
+      const labelEl = document.getElementById('currentThemeLabel');
+      const dotEl = document.getElementById('currentThemeDot');
+      if (labelEl) labelEl.textContent = `Màu chủ đạo: ${theme.name}`;
+      if (dotEl) dotEl.style.backgroundColor = theme.brandStrong;
+
+      document.querySelectorAll('.theme-item').forEach(item => {
+        if (item.dataset.themeId === theme.id) {
+          item.classList.add('active');
+        } else {
+          item.classList.remove('active');
+        }
+      });
+
+      if (save) {
+        localStorage.setItem(THEME_LS_KEY, JSON.stringify(theme));
+      }
+    }
+
+    window.selectPresetTheme = function(id) {
+      const found = themes.find(t => t.id === id);
+      if (found) {
+        applyTheme(found, true);
+        const customColorPicker = document.getElementById('customColorPicker');
+        if (customColorPicker) customColorPicker.value = found.brandStrong;
+
+        // Close dropdown
+        const container = document.getElementById('themeDropdownContainer');
+        const menu = document.getElementById('themeDropdownMenu');
+        if (menu) menu.classList.remove('show');
+        if (container) container.classList.remove('open');
+      }
+    };
+
+    function initTheme() {
+      const container = document.getElementById('themePresetList');
+      if (container) {
+        container.innerHTML = themes.map(t => `
+          <button type="button" class="theme-item" data-theme-id="${t.id}" onclick="selectPresetTheme('${t.id}')">
+            <span class="d-flex align-items-center gap-2">
+              <span class="theme-swatch" style="background-color: ${t.brandStrong};"></span>
+              <span>${t.name}</span>
+            </span>
+            <span class="theme-check small">✓</span>
+          </button>
+        `).join('');
+      }
+
+      const customColorPicker = document.getElementById('customColorPicker');
+      if (customColorPicker) {
+        customColorPicker.addEventListener('input', (e) => {
+          const t = createThemeFromColor(e.target.value, 'Màu tự chọn');
+          applyTheme(t, true);
+        });
+      }
+
+      // Standalone toggle logic
+      const themeBtn = document.getElementById('themeDropdownBtn');
+      const dropdownContainer = document.getElementById('themeDropdownContainer');
+      const dropdownMenu = document.getElementById('themeDropdownMenu');
+
+      if (themeBtn && dropdownMenu && dropdownContainer) {
+        themeBtn.addEventListener('click', (e) => {
+          e.stopPropagation();
+          const isOpen = dropdownMenu.classList.toggle('show');
+          dropdownContainer.classList.toggle('open', isOpen);
+        });
+
+        // Clicking inside the menu (e.g. color picker) will not close it
+        dropdownMenu.addEventListener('click', (e) => {
+          e.stopPropagation();
+        });
+
+        // Clicking anywhere outside closes it
+        document.addEventListener('click', () => {
+          dropdownMenu.classList.remove('show');
+          dropdownContainer.classList.remove('open');
+        });
+      }
+
+      // Load saved theme if any
+      const saved = localStorage.getItem(THEME_LS_KEY);
+      if (saved) {
+        try {
+          const parsed = JSON.parse(saved);
+          if (parsed && parsed.brand) {
+            applyTheme(parsed, false);
+            if (customColorPicker && parsed.brandStrong) {
+              customColorPicker.value = parsed.brandStrong.startsWith('#') ? parsed.brandStrong : '#79d18e';
+            }
+            return;
+          }
+        } catch (e) {
+          console.warn('Cannot load saved theme', e);
+        }
+      }
+      applyTheme(themes[0], false);
+    }
+
     // --- Init ---
     function init(){
+      initTheme();
       loadState();
       renderMembers();
       renderExpenses();
